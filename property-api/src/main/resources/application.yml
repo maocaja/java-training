@@ -21,11 +21,31 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      # --- ddl-auto: validate ---
+      # Hibernate solo VALIDA que las @Entity matcheen el schema real.
+      # No crea ni modifica tablas — eso lo hace Flyway.
+      # Si una entity y la tabla no coinciden, la app NO arranca (fail fast).
+      # Alternativa "none" es mas permisiva pero perdemos la red de seguridad.
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+
+  # --- Flyway (schema versioning) ---
+  # Corre al arrancar la app ANTES que Hibernate.
+  # Lee archivos V<n>__*.sql de classpath:db/migration/
+  # Mantiene historial en la tabla flyway_schema_history.
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    # baseline-on-migrate: si arranca contra una BD con tablas pre-existentes
+    # sin flyway_schema_history, marca el estado como baseline en vez de fallar.
+    # Necesario cuando migras de un proyecto que antes usaba ddl-auto: update/create.
+    baseline-on-migrate: true
+    # validate-on-migrate: verifica checksums de migraciones ya aplicadas.
+    # Si alguien edito V1 despues de aplicarlo, la app no arranca.
+    validate-on-migrate: true
 
   h2:
     console:
