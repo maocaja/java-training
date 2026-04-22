@@ -36,10 +36,16 @@ spring:
     validate-on-migrate: true
 
 # --- JWT Config ---
-# El secret se va a externalizar a env var en B3.
+# Secret viene de la env var JWT_SECRET (12-factor, principio III).
+# Si falta, la app falla al arrancar con mensaje claro (fail fast).
+# Las env vars se inyectan via:
+#   - dev local: archivo .env (gitignored)
+#   - docker-compose: lee .env automaticamente
+#   - AWS ECS: desde Secrets Manager
+#   - tests: application-test.yml provee valor fijo (no sensible)
 jwt:
-  secret: dGhpc0lzQVZlcnlTZWN1cmVTZWNyZXRLZXlGb3JKV1RUb2tlbnM=
-  expiration-ms: 3600000  # 1 hora
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS:3600000}  # default 1 hora si no se setea
 
 # URL del pricing-api (JSON-RPC).
 # En AWS se setea via env var al URL del servicio interno.
