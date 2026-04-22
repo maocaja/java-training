@@ -35,6 +35,14 @@ spring:
     baseline-on-migrate: true
     validate-on-migrate: true
 
+  # --- Graceful shutdown timeout ---
+  # Tiempo maximo (25s) que Spring espera a que los requests en vuelo
+  # terminen antes de forzar el cierre. ECS envia SIGKILL 30s despues
+  # de SIGTERM — dejamos 5s de margen para que Spring cierre limpio
+  # antes de ser asesinado por ECS.
+  lifecycle:
+    timeout-per-shutdown-phase: 25s
+
 # --- JWT Config ---
 # Secret viene de la env var JWT_SECRET (12-factor, principio III).
 # Si falta, la app falla al arrancar con mensaje claro (fail fast).
@@ -55,6 +63,14 @@ services:
 
 server:
   port: ${SERVER_PORT:8081}
+  # --- Graceful shutdown ---
+  # Al recibir SIGTERM (deploy, autoscaling, healthcheck fallido):
+  # 1. Tomcat deja de aceptar requests nuevos (cierra el puerto)
+  # 2. Espera a que los requests en vuelo terminen
+  # 3. Cierra pools de conexiones (DB, Feign clients, etc.)
+  # Sin esto, SIGTERM mata requests en vuelo y devuelve errores 500.
+  # El timeout de espera se configura en spring.lifecycle (ver arriba).
+  shutdown: graceful
 
 # --- Spring Boot Actuator ---
 # Endpoints de management para operaciones (health checks, metrics, etc).

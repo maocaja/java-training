@@ -7,8 +7,16 @@ spring:
   profiles:
     default: dev
 
+  # Graceful shutdown: timeout que Spring espera (25s) antes de forzar cierre.
+  # ECS envia SIGKILL a los 30s — dejamos 5s de margen.
+  lifecycle:
+    timeout-per-shutdown-phase: 25s
+
 server:
   port: ${SERVER_PORT:8082}
+  # Graceful shutdown: Tomcat deja de aceptar requests al recibir SIGTERM
+  # y espera a que los en-vuelo terminen antes de cerrar.
+  shutdown: graceful
 
 # --- Actuator ---
 # Minimo seguro: solo health e info publicamente.

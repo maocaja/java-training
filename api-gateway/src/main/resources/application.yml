@@ -18,6 +18,11 @@ spring:
   profiles:
     default: dev
 
+  # Graceful shutdown: 25s para terminar requests en vuelo antes de cerrar.
+  # ECS envia SIGKILL a los 30s; le dejamos 5s de margen.
+  lifecycle:
+    timeout-per-shutdown-phase: 25s
+
   cloud:
     gateway:
       routes:
@@ -40,6 +45,8 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+  # Graceful shutdown del Netty del gateway. Igual que en los servicios.
+  shutdown: graceful
 
 # --- Actuator ---
 # En el gateway, ademas de health/info, exponemos "gateway" que da visibilidad
