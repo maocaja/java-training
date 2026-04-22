@@ -58,6 +58,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         // H2 console publico (solo desarrollo)
                         .requestMatchers("/h2-console/**").permitAll()
+                        // --- Actuator: health/info PUBLICOS ---
+                        // Razon: el ALB/ECS hace healthcheck sin JWT.
+                        // /actuator/info expone metadata no-sensible (version, app name).
+                        // Los OTROS endpoints de actuator (env, metrics, etc) requieren
+                        // auth — aun si los exponemos por management.endpoints, Spring
+                        // Security los protege.
+                        .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/**").authenticated()
                         // GET es para todos los autenticados (USER y ADMIN)
                         .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
                         // POST, PUT, DELETE solo para ADMIN

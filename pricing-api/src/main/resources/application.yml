@@ -9,3 +9,17 @@ spring:
 
 server:
   port: ${SERVER_PORT:8082}
+
+# --- Actuator ---
+# Minimo seguro: solo health e info publicamente.
+# Expande en perfiles especificos (dev).
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized

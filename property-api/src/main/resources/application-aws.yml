@@ -45,3 +45,17 @@ logging:
     com.mauricio.propertyapi: INFO
     org.springframework.web: WARN
     org.hibernate: WARN
+
+# Actuator en produccion: solo lo minimo necesario.
+# health + info + prometheus (para CloudWatch/Prometheus scraping en B10).
+# NUNCA exponer env, heapdump, threaddump publicamente — son vectores de ataque.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      # En prod: NO mostrar detalles ni siquiera a usuarios autenticados.
+      # Solo UP/DOWN para el ALB. Info detallada a traves de logs y metrics.
+      show-details: never

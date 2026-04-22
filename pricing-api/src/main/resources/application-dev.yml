@@ -3,3 +3,13 @@ logging:
   level:
     com.mauricio.pricingapi: DEBUG
     org.springframework.web: INFO
+
+# Actuator expandido en dev para debugging.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

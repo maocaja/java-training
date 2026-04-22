@@ -22,6 +22,13 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
+
+        <!-- Spring Boot Actuator — endpoints de management para production -->
+        <!-- Funciona igual en apps reactivas (Netty) que en servlet-based (Tomcat) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
     </dependencies>
 
     <!-- dependencyManagement heredado del POM padre (Spring Cloud BOM) -->

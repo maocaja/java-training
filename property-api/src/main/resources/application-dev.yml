@@ -31,3 +31,16 @@ logging:
     com.mauricio.propertyapi: DEBUG
     org.springframework.web: INFO
     org.hibernate.SQL: DEBUG
+
+# Actuator: exponer TODOS los endpoints en dev para debugging.
+# NO hacer esto en prod — /actuator/env leakea secrets, /actuator/heapdump
+# expone memoria. En AWS se queda en la config minima del application.yml.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      # En dev mostramos todos los detalles sin autenticacion
+      show-details: always

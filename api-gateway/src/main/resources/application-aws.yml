@@ -6,3 +6,14 @@ logging:
     root: INFO
     org.springframework.cloud.gateway: WARN
     reactor.netty: WARN
+
+# Actuator minimo en prod.
+# NO exponemos "gateway" — revelaria topologia interna a atacantes.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: never

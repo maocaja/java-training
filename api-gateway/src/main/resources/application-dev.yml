@@ -4,3 +4,14 @@ logging:
   level:
     org.springframework.cloud.gateway: DEBUG
     reactor.netty.http.server: INFO
+
+# Actuator expandido en dev. Incluye "gateway" para inspeccionar rutas.
+# Accedes a /actuator/gateway/routes para ver las rutas activas.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

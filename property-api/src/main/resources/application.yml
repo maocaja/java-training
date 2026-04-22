@@ -49,3 +49,33 @@ services:
 
 server:
   port: ${SERVER_PORT:8081}
+
+# --- Spring Boot Actuator ---
+# Endpoints de management para operaciones (health checks, metrics, etc).
+# Por seguridad: exponemos SOLO health e info por default.
+# Otros perfiles (dev) pueden expandir la lista.
+management:
+  endpoints:
+    web:
+      exposure:
+        # health: estado de la app + dependencias (BD, disk, etc)
+        # info: metadata de la app (version, git)
+        include: health, info
+      # Cambiamos el path base de /actuator a /actuator (explicito)
+      base-path: /actuator
+
+  endpoint:
+    health:
+      # probes.enabled: true → expone /actuator/health/liveness y /readiness
+      # Esto es lo que ECS/ALB usan como health check en produccion.
+      probes:
+        enabled: true
+      # show-details: when-authorized → solo usuarios autenticados ven detalles.
+      # Por default muestra solo UP/DOWN (suficiente para el LB).
+      # Con authorized, un admin puede ver que componente fallo.
+      show-details: when-authorized
+
+  # Info endpoint: datos estaticos sobre la app
+  info:
+    env:
+      enabled: true  # incluye info.* properties del yml

@@ -5,3 +5,13 @@ logging:
     root: INFO
     com.mauricio.pricingapi: INFO
     org.springframework.web: WARN
+
+# Actuator minimo en prod.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: never
