@@ -1,0 +1,103 @@
+# --- Compilados Java/Maven ---
+# target/ contiene los .class y .jar generados por Maven. Se regeneran, no se commitean.
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven version backups
+*.versionsBackup
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# --- IDEs ---
+# IntelliJ: config local del IDE, indexes, workspace
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# VSCode: settings locales (cada dev tiene los suyos)
+.vscode/
+!.vscode/launch.json.example
+
+# Eclipse
+.classpath
+.project
+.settings/
+.metadata/
+bin/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# --- Logs y archivos de runtime ---
+*.log
+logs/
+hs_err_pid*.log
+replay_pid*.log
+
+# --- OS-specific ---
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+
+# --- Secretos y config local ---
+# NUNCA commitear archivos con secretos reales
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+secrets.yml
+application-local.yml
+
+# --- Archivos personales (no commitear en repo publico) ---
+# Contexto de Claude con info personal/laboral
+CLAUDE.md
+# Notas personales de estudio
+PLAN_ESTUDIO.md
+GUIA_PROYECTO.md
+ESTRUCTURA_Y_ANOTACIONES.md
+
+# --- Testing ---
+# Reportes de coverage, surefire, etc.
+.coverage
+coverage/
+*.exec
+.sonar/
+
+# --- Docker ---
+# Volumenes locales (si se crean en el repo)
+docker-volumes/
+
+# --- Terraform (para cuando lleguemos a Fase 10) ---
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+!terraform.tfvars.example
+crash.log
+crash.*.log

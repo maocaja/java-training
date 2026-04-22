@@ -1,0 +1,47 @@
+# --- SPRING CLOUD GATEWAY CONFIG ---
+# El gateway es el UNICO punto de entrada. Los clientes solo conocen :8080.
+# El gateway rutea cada request al microservicio correcto basado en el path.
+#
+# Equivalente en lo que conoces:
+#   - Nginx reverse proxy con location blocks
+#   - Kong API Gateway
+#   - Go: mux con rutas que proxean a otros servicios
+#   - Kubernetes: Ingress controller
+#
+# Diferencia: Spring Cloud Gateway es PROGRAMABLE en Java.
+# Puedes agregar filtros custom (logging, rate limiting, auth) con codigo.
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        # --- RUTA 1: property-api (REST) ---
+        # Todo lo que empiece con /api/ va al property-api
+        - id: property-service
+          uri: ${PROPERTY_SERVICE_URL:http://localhost:8081}
+          predicates:
+            # Path predicate: matchea requests por URL pattern
+            - Path=/api/**
+          filters:
+            # StripPrefix=0: no quita nada del path (envia /api/properties tal cual)
+            # AddRequestHeader: agrega un header para que el servicio sepa que vino del gateway
+            - AddRequestHeader=X-Gateway, spring-cloud-gateway
+
+        # --- RUTA 2: pricing-api (JSON-RPC) ---
+        # Todo lo que vaya a /rpc va al pricing-api
+        - id: pricing-service
+          uri: ${PRICING_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/rpc
+          filters:
+            - AddRequestHeader=X-Gateway, spring-cloud-gateway
+
+server:
+  port: 8080
+
+# Logging para ver que rutas matchean
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
