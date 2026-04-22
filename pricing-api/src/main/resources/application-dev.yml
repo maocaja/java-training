@@ -1,0 +1,5 @@
+# Profile dev: logging verbose para debugging local.
+logging:
+  level:
+    com.mauricio.pricingapi: DEBUG
+    org.springframework.web: INFO

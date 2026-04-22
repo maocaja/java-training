@@ -1,0 +1,47 @@
+# ==================================================================
+# Profile: aws
+# Uso: produccion en AWS ECS Fargate
+# BD: PostgreSQL (RDS), credenciales via env vars (Secrets Manager)
+# Logs: production-appropriate (INFO root, sin SQL)
+# H2 Console: DESHABILITADA (no existe H2 en prod)
+# ==================================================================
+spring:
+  datasource:
+    # JDBC URL a RDS PostgreSQL. Variables inyectadas por ECS desde Secrets Manager.
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      # Connection pool tunning para produccion
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 30000
+
+  jpa:
+    # Sin SQL en logs — ruido y costo en CloudWatch Logs
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        # Dialecto explicito (Hibernate lo infiere pero es mejor explicito)
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        # Batch updates para mejor rendimiento
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+
+  # H2 console NUNCA en prod (security risk)
+  h2:
+    console:
+      enabled: false
+
+# Logs production-appropriate
+logging:
+  level:
+    root: INFO
+    com.mauricio.propertyapi: INFO
+    org.springframework.web: WARN
+    org.hibernate: WARN

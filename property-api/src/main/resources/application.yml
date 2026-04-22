@@ -2,64 +2,47 @@ spring:
   application:
     name: property-api
 
+  # --- Profile por default ---
+  # Si no se especifica SPRING_PROFILES_ACTIVE, activa "dev".
+  # En AWS, el task definition setea SPRING_PROFILES_ACTIVE=aws.
+  profiles:
+    default: dev
+
   # --- VIRTUAL THREADS (Java 21) ---
-  # Una sola linea activa virtual threads para TODOS los requests HTTP.
-  # Antes: Tomcat usaba ~200 platform threads (cada uno ~1MB de stack).
-  #   Si los 200 estaban esperando I/O (BD, APIs externas), tu app se bloqueaba.
-  # Ahora: cada request corre en un virtual thread (~pocos KB).
-  #   Puedes tener miles de requests concurrentes esperando I/O sin problema.
-  # Es como Go goroutines o Kotlin coroutines, pero transparente — tu codigo no cambia.
+  # Una sola linea activa virtual threads para todos los requests HTTP.
+  # Cada request corre en un virtual thread (~pocos KB) en vez de platform thread (~1MB).
+  # Permite miles de requests concurrentes esperando I/O sin agotar threads.
   threads:
     virtual:
       enabled: true
 
-  datasource:
-    url: jdbc:h2:mem:propertydb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
   jpa:
     hibernate:
-      # --- ddl-auto: validate ---
-      # Hibernate solo VALIDA que las @Entity matcheen el schema real.
-      # No crea ni modifica tablas — eso lo hace Flyway.
-      # Si una entity y la tabla no coinciden, la app NO arranca (fail fast).
-      # Alternativa "none" es mas permisiva pero perdemos la red de seguridad.
+      # Hibernate solo valida que @Entity matcheen el schema.
+      # Flyway es el unico que modifica el schema.
+      # Si hay mismatch, la app no arranca (fail fast).
       ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+    # show-sql y format-sql se configuran por profile
+    # (verbose en dev, desactivado en aws por costos de CloudWatch)
 
   # --- Flyway (schema versioning) ---
-  # Corre al arrancar la app ANTES que Hibernate.
-  # Lee archivos V<n>__*.sql de classpath:db/migration/
-  # Mantiene historial en la tabla flyway_schema_history.
+  # Corre al arrancar ANTES que Hibernate.
+  # Lee V<n>__*.sql de classpath:db/migration/
+  # Mantiene historial en flyway_schema_history.
   flyway:
     enabled: true
     locations: classpath:db/migration
-    # baseline-on-migrate: si arranca contra una BD con tablas pre-existentes
-    # sin flyway_schema_history, marca el estado como baseline en vez de fallar.
-    # Necesario cuando migras de un proyecto que antes usaba ddl-auto: update/create.
     baseline-on-migrate: true
-    # validate-on-migrate: verifica checksums de migraciones ya aplicadas.
-    # Si alguien edito V1 despues de aplicarlo, la app no arranca.
     validate-on-migrate: true
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-
 # --- JWT Config ---
-# En produccion estas valores vienen de variables de entorno, NUNCA en el yml.
-# Esta key es de 256 bits en Base64 (minimo requerido por HS256).
+# El secret se va a externalizar a env var en B3.
 jwt:
   secret: dGhpc0lzQVZlcnlTZWN1cmVTZWNyZXRLZXlGb3JKV1RUb2tlbnM=
   expiration-ms: 3600000  # 1 hora
 
-# URL del pricing-api (JSON-RPC). En Docker seria http://pricing-api:8082
+# URL del pricing-api (JSON-RPC).
+# En AWS se setea via env var al URL del servicio interno.
 services:
   pricing:
     url: ${PRICING_SERVICE_URL:http://localhost:8082}

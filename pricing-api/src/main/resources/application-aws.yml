@@ -1,0 +1,7 @@
+# Profile aws: logging production-appropriate.
+# Sin DEBUG: ruido y costo en CloudWatch Logs.
+logging:
+  level:
+    root: INFO
+    com.mauricio.pricingapi: INFO
+    org.springframework.web: WARN

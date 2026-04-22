@@ -1,0 +1,36 @@
+# ==================================================================
+# Profile: test
+# Uso: automatizado cuando corren los tests (JUnit, @SpringBootTest)
+# BD: H2 en memoria, nombre distinto para aislar de "dev"
+# Logs: minimos (no queremos ensuciar output de tests)
+# ==================================================================
+spring:
+  datasource:
+    # URL sin DB_CLOSE_DELAY=-1 a proposito.
+    # Con @DirtiesContext AFTER_EACH_TEST_METHOD, cada test destruye el contexto
+    # y la BD se evapora. El siguiente test obtiene una BD limpia.
+    # Si agregamos DB_CLOSE_DELAY=-1, la BD persiste y los datos se filtran
+    # entre tests, rompiendo aislamiento.
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    # show-sql false — los tests no necesitan SQL verbose
+    show-sql: false
+
+# JWT secret fijo para tests (no es sensible, solo tests)
+jwt:
+  secret: dGhpc0lzQVRlc3RTZWNyZXRLZXlGb3JKV1RUb2tlbnNPbmx5Rm9yVGVzdA==
+
+# Pricing service URL fake para tests (no se llama en tests unitarios)
+services:
+  pricing:
+    url: http://localhost:0
+
+# Logs minimos en tests
+logging:
+  level:
+    root: WARN
+    com.mauricio.propertyapi: INFO

@@ -2,5 +2,10 @@ spring:
   application:
     name: pricing-api
 
+  # Profile default para correr localmente sin setear SPRING_PROFILES_ACTIVE.
+  # En AWS se setea SPRING_PROFILES_ACTIVE=aws en el task definition.
+  profiles:
+    default: dev
+
 server:
-  port: 8082
+  port: ${SERVER_PORT:8082}

@@ -1,0 +1,8 @@
+# Profile aws: logging production-appropriate.
+# DEBUG del gateway es demasiado chatty (un log por request).
+# En prod solo WARN/ERROR a menos que estemos debuggeando algo especifico.
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: WARN
+    reactor.netty: WARN

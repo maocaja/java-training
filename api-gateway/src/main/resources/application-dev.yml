@@ -1,0 +1,6 @@
+# Profile dev: logging DEBUG de Spring Cloud Gateway para ver que rutas matchean.
+# Util cuando estas configurando rutas nuevas o debuggeando por que no se rutea.
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.server: INFO

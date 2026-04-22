@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -25,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //
 // Diferencia con unit test: aqui NO hay mocks. Todo es real.
 @SpringBootTest
+@ActiveProfiles("test")
 // --- @AutoConfigureMockMvc ---
 // Configura MockMvc automaticamente. MockMvc simula requests HTTP
 // sin levantar un servidor real (no abre un puerto).
