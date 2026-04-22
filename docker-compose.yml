@@ -29,7 +29,10 @@ services:
 
   # --- Pricing API (JSON-RPC) — servicio interno ---
   pricing-api:
-    build: ./pricing-api
+    build:
+      # Context es la raiz del monorepo (para resolver dependencias entre modulos)
+      context: .
+      dockerfile: pricing-api/Dockerfile
     ports:
       - "8082:8082"
     environment:
@@ -38,7 +41,9 @@ services:
 
   # --- Property API (REST) — servicio principal ---
   property-api:
-    build: ./property-api
+    build:
+      context: .
+      dockerfile: property-api/Dockerfile
     ports:
       - "8081:8081"
     environment:
@@ -63,7 +68,9 @@ services:
 
   # --- API Gateway — punto unico de entrada ---
   api-gateway:
-    build: ./api-gateway
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
     ports:
       - "8080:8080"
     environment:

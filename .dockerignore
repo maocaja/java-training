@@ -1,0 +1,60 @@
+# ===================================================================
+# .dockerignore - archivos que NO se envian al Docker build context
+# Aplica a TODOS los Dockerfiles que usan context = . (monorepo root)
+#
+# Reducir el build context hace:
+#   - builds mas rapidos (menos archivos que enviar al daemon)
+#   - imagenes mas chicas (si por error se hiciera COPY . .)
+#   - menos riesgo de filtrar archivos sensibles a la imagen
+# ===================================================================
+
+# Build artifacts de Maven
+**/target/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Git (no necesitamos la historia git dentro del container)
+.git/
+.gitignore
+
+# Documentacion markdown (no se usa en runtime)
+*.md
+**/*.md
+# Excepcion: archivos de readme dentro de src pueden ser necesarios
+!**/src/**/*.md
+
+# Archivos de Claude/contexto personal (ya en .gitignore pero por si acaso)
+CLAUDE.md
+PLAN_ESTUDIO.md
+GUIA_PROYECTO.md
+ESTRUCTURA_Y_ANOTACIONES.md
+
+# Variables locales
+.env
+.env.*
+!.env.example
+
+# OS
+**/.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+**/*.log
+
+# Dockerfiles (no se necesitan dentro del container)
+**/Dockerfile
+.dockerignore
+
+# Compose files (solo los usa Docker host, no los containers)
+docker-compose.yml
+docker-compose.*.yml
+
+# Archivos de infraestructura (pendientes)
+infra/
+terraform/
+**/*.tfstate
+**/*.tfvars
