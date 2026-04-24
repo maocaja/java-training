@@ -15,3 +15,20 @@ management:
   endpoint:
     health:
       show-details: never
+
+  metrics:
+    tags:
+      application: pricing-api
+
+  cloudwatch:
+    metrics:
+      export:
+        namespace: JavaTraining/PricingApi
+        step: 60s
+        batch-size: 20
+        enabled: true
+
+  prometheus:
+    metrics:
+      export:
+        enabled: true

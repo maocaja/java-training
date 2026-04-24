@@ -8,6 +8,9 @@ import com.mauricio.propertyapi.exception.ResourceNotFoundException;
 import com.mauricio.propertyapi.model.Property;
 import com.mauricio.propertyapi.repository.ProjectRepository;
 import com.mauricio.propertyapi.repository.PropertyRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -26,14 +29,31 @@ public class PropertyService {
     private final ApplicationEventPublisher eventPublisher;
     private final PricingService pricingService;
 
+    // --- Custom metrics (Micrometer) ---
+    // Counter: numero acumulado de properties creadas.
+    // Timer: distribucion de latencia de getValuation (p50/p95/p99).
+    // Estos se publican a CloudWatch (o Prometheus) via el registry configurado.
+    private final Counter propertiesCreatedCounter;
+    private final Timer valuationLatencyTimer;
+
     public PropertyService(PropertyRepository repository,
                            ProjectRepository projectRepository,
                            ApplicationEventPublisher eventPublisher,
-                           PricingService pricingService) {
+                           PricingService pricingService,
+                           MeterRegistry meterRegistry) {
         this.repository = repository;
         this.projectRepository = projectRepository;
         this.eventPublisher = eventPublisher;
         this.pricingService = pricingService;
+
+        this.propertiesCreatedCounter = Counter.builder("property.created")
+                .description("Total number of properties created")
+                .register(meterRegistry);
+
+        this.valuationLatencyTimer = Timer.builder("valuation.request.duration")
+                .description("Latency of valuation requests to pricing-api")
+                .publishPercentiles(0.5, 0.95, 0.99)
+                .register(meterRegistry);
     }
 
     public PropertyResponse create(CreatePropertyRequest request) {
@@ -44,6 +64,11 @@ public class PropertyService {
         property.setBedrooms(request.bedrooms());
 
         var saved = repository.save(property);
+
+        // --- Metric: incrementar contador ---
+        // Cada property creada suma 1. En CloudWatch veremos "property_created_total"
+        // como una metrica counter — permite alertar si cae drasticamente.
+        propertiesCreatedCounter.increment();
 
         // --- Publicar evento ---
         // Despues de guardar exitosamente, publicamos el evento.
@@ -132,7 +157,13 @@ public class PropertyService {
 
         log.info("Requesting valuation for property '{}' in '{}'", property.getName(), property.getCity());
 
-        var valuation = pricingService.getValuation(property.getCity(), property.getBedrooms());
+        // --- Timer: mide latencia de la llamada ---
+        // timer.record(supplier) envuelve la operacion, mide duracion, y reporta
+        // los percentiles (p50, p95, p99). En CloudWatch/Prometheus vemos
+        // distribucion real de tiempos para alertar si se degrada.
+        var valuation = valuationLatencyTimer.record(() ->
+                pricingService.getValuation(property.getCity(), property.getBedrooms())
+        );
 
         return new ValuationResponse(
                 property.getId(),

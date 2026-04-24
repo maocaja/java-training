@@ -59,3 +59,27 @@ management:
       # En prod: NO mostrar detalles ni siquiera a usuarios autenticados.
       # Solo UP/DOWN para el ALB. Info detallada a traves de logs y metrics.
       show-details: never
+
+  # --- Metrics publication a CloudWatch ---
+  # Los beans de Micrometer-CloudWatch publican metricas cada N segundos
+  # (step) usando PutMetricData API. Namespace agrupa metricas en CloudWatch.
+  metrics:
+    tags:
+      # Tags se aplican a TODAS las metricas — permite filtrar por servicio.
+      application: property-api
+
+  cloudwatch:
+    metrics:
+      export:
+        namespace: JavaTraining/PropertyApi
+        # Publicar cada 60s (balance entre frescura y costo de PutMetricData).
+        step: 60s
+        # Batch tamaño: CloudWatch acepta max 1000 metricas por call.
+        batch-size: 20
+        enabled: true
+
+  # Tambien exponemos Prometheus para compatibilidad si migramos despues.
+  prometheus:
+    metrics:
+      export:
+        enabled: true

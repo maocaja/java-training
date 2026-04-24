@@ -9,8 +9,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import com.mauricio.propertyapi.exception.ResourceNotFoundException;
@@ -47,8 +50,17 @@ class PropertyServiceTest {
     @Mock
     PricingService pricingService;
 
+    // --- @Spy con SimpleMeterRegistry ---
+    // PropertyService crea Counter/Timer reales en el constructor (via builder().register()).
+    // Si mockearamos MeterRegistry con @Mock vanilla, el builder().register() devolveria null
+    // y los tests explotarian al intentar counter.increment().
+    // SimpleMeterRegistry es una implementacion in-memory real de Micrometer — perfecta para tests.
+    // @Spy le dice a @InjectMocks: "usa esta instancia concreta, no la mockes".
+    @Spy
+    MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
     // --- @InjectMocks ---
-    // Crea una instancia REAL de PropertyService e inyecta los @Mock en su constructor.
+    // Crea una instancia REAL de PropertyService e inyecta los @Mock/@Spy en su constructor.
     @InjectMocks
     PropertyService service;
 
