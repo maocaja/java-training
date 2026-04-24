@@ -61,6 +61,49 @@ services:
   pricing:
     url: ${PRICING_SERVICE_URL:http://localhost:8082}
 
+# --- Resilience4j: tolerancia a fallos de pricing-api ---
+# Tres patterns combinados protegen la llamada a pricing-api:
+#   1. Retry: reintenta fallos transitorios (red intermitente)
+#   2. Circuit Breaker: si el servicio esta claramente caido, deja de
+#      llamar por un rato para no sobrecargarlo (y no bloquear threads nuestros).
+#   3. TimeLimiter / Feign timeouts: corta si tarda demasiado.
+resilience4j:
+  circuitbreaker:
+    instances:
+      pricingService:
+        # Abre el circuit si 50% de los ultimos 10 calls fallan
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 10
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        # Cuanto espera el circuit en "open" antes de pasar a "half-open"
+        wait-duration-in-open-state: 30s
+        # En "half-open", cuantos calls de prueba permite
+        permitted-number-of-calls-in-half-open-state: 3
+        # Tipos de excepcion que cuentan como "failure"
+        record-exceptions:
+          - feign.FeignException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+
+  retry:
+    instances:
+      pricingService:
+        max-attempts: 3
+        wait-duration: 500ms
+        # Exponential backoff: 500ms, 1s, 2s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - feign.FeignException
+          - java.io.IOException
+
+# Feign client timeouts (complementarios al TimeLimiter).
+# Sin esto los threads se bloquean indefinidamente si pricing-api cuelga.
+spring.cloud.openfeign.client.config.pricing-service:
+  connect-timeout: 2000    # 2s para abrir la conexion TCP
+  read-timeout: 5000       # 5s para recibir respuesta completa
+
 server:
   port: ${SERVER_PORT:8081}
   # --- Graceful shutdown ---
