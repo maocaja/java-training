@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logback config que es profile-aware:
+  - dev/test: formato texto legible para humanos
+  - aws: JSON estructurado para CloudWatch Logs Insights
+
+  Nombre del archivo: logback-spring.xml (no logback.xml) para que
+  Spring Boot inyecte el <springProfile> tag.
+-->
+<configuration>
+
+    <!-- Spring Boot expone spring.application.name como property -->
+    <springProperty scope="context" name="appName" source="spring.application.name"/>
+
+    <!-- ============ DEV/TEST: texto legible ============ -->
+    <springProfile name="dev,test,default">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- ============ AWS: JSON estructurado ============ -->
+    <springProfile name="aws">
+        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <!-- Campos adicionales que estaran en cada log entry -->
+                <customFields>{"service":"${appName}"}</customFields>
+
+                <!-- MDC keys que queremos incluir (viene de B9: correlation IDs) -->
+                <includeMdcKeyName>request_id</includeMdcKeyName>
+                <includeMdcKeyName>user_id</includeMdcKeyName>
+                <includeMdcKeyName>tenant_id</includeMdcKeyName>
+
+                <!-- Timestamp ISO 8601 con timezone UTC -->
+                <timeZone>UTC</timeZone>
+                <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSSXXX</timestampPattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </root>
+    </springProfile>
+
+</configuration>
